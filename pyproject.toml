@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "country_list"
+version = "0.2.1"
+description = "List of all countries with names and ISO 3166-1 codes in all languages"
+authors = ["Niels Lemmens <draso.odin@gmail.com>"]
+license = "MIT"
+readme = "README.rst"
+repository = "https://github.com/bulv1ne/country_list"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+]
+packages = [
+    { include = "country_list" }
+]
+include = ["README.rst","* country.csv"]
+exclude = ["* __pycache__", "* *.py[co]"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+isort = "*"
+flake8 = "*"
+coverage = "*"
+black = "^19.10b0"
+mypy = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
