@@ -1,49 +1,57 @@
-import argparse
 import json
 
 from . import available_languages, countries_for_language
 
-parser = argparse.ArgumentParser(
-    "country_list", description="List available countries and country codes",
+try:
+    import click
+except ImportError:
+    print("ERROR!!")
+    print("click package missing")
+    print("Install click by running:")
+    print("  pip install click")
+    print("Or by reinstalling country_list with cli")
+    print("  pip install country_list[cli]")
+    exit(1)
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command("list")
+@click.option(
+    "--simple", is_flag=True, help="Output only languages without country combination."
 )
-parser.set_defaults(func=None)
-
-subparsers = parser.add_subparsers(title="available commands")
-
-list_parser = subparsers.add_parser("list", help="List all available languages.")
-list_parser.set_defaults(func="list")
-list_parser.add_argument("--simple", action="store_true")
-
-country_for_language_parser = subparsers.add_parser(
-    "show",
-    help=(
-        "Show countries for a specific language."
-        " Add country code to only show that country."
-    ),
-)
-country_for_language_parser.set_defaults(func="show")
-country_for_language_parser.add_argument("lang")
-country_for_language_parser.add_argument("country", nargs="*", type=str.upper)
+def list_(simple=False):
+    for lang in available_languages():
+        if not simple or "_" not in lang:
+            click.echo(lang)
 
 
-export_parser = subparsers.add_parser("export", help="Export countries to json")
-export_parser.set_defaults(func="export")
-export_parser.add_argument("lang", nargs="+")
+@cli.command()
+@click.argument("lang", nargs=1)
+@click.argument("country", nargs=-1, required=False, type=str.upper)
+def show(lang, country):
+    for country_code, country_name in countries_for_language(lang):
+        if not country or country_code in country:
+            click.echo("{} - {}".format(country_code, country_name))
+
+
+@cli.command()
+@click.argument("lang", nargs=-1, required=True)
+@click.option("--small", is_flag=True, help="Output the json as small as possible.")
+def export(lang, small):
+    export_data = {}
+    for language_name in lang:
+        export_data[language_name] = dict(countries_for_language(language_name))
+
+    json_dump_kwargs = {"sort_keys": True, "indent": 2}
+    if small:
+        json_dump_kwargs = {"sort_keys": True, "separators": (",", ":")}
+
+    click.echo(json.dumps(export_data, **json_dump_kwargs))
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    if args.func == "list":
-        for lang in available_languages():
-            if not args.simple or "_" not in lang:
-                print(lang)
-    elif args.func == "show":
-        for country_code, country_name in countries_for_language(args.lang):
-            if not args.country or country_code in args.country:
-                print("{} - {}".format(country_code, country_name))
-    elif args.func == "export":
-        export_data = {}
-        for lang in args.lang:
-            export_data[lang] = dict(countries_for_language(lang))
-
-        print(json.dumps(export_data, indent=2, sort_keys=True))
+    cli(prog_name="country_list")

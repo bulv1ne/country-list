@@ -30,4 +30,5 @@ setup(
     url="https://github.com/bulv1ne/country_list",
     version="0.2.1",
     zip_safe=False,
+    extras_require={"cli": ["click>=6,<8"]},
 )
